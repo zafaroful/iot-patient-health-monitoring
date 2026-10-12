@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Monitoring Records</title>
+    <style>
+        body { background-color: cyan; font-family: Arial, sans-serif; font-size: 30px; margin: 30px; }
+        #healthDataDisplay { font-family: "Times New Roman", serif; font-weight: lighter; font-size: 25px; margin-top: 30px; }
+        #status { font-size: 16px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<h1>Health Monitoring Records</h1>
+
+<div id="healthDataDisplay">
+    <p>Heart Rate: <span id="heartRate">--</span> BPM</p>
+    <p>Blood Oxygen (SpO2): <span id="spo2">--</span> %</p>
+    <p>Body Temperature: <span id="bodyTemp">--</span> &deg;C</p>
+    <p>Room Temperature: <span id="roomTemp">--</span> &deg;C</p>
+    <p>Humidity: <span id="humidity">--</span> %</p>
+</div>
+<div id="status">Connecting...</div>
+
+<script>
+    const fields = ['heartRate', 'spo2', 'bodyTemp', 'roomTemp', 'humidity'];
+    const statusEl = document.getElementById('status');
+
+    async function refresh() {
+        try {
+            const res = await fetch('health_record_data.php', { cache: 'no-store' });
+            const data = await res.json();
+            if (!res.ok || !data.ok) throw new Error(data.error || 'Request failed');
+
+            fields.forEach(id => {
+                const v = data[id];
+                document.getElementById(id).textContent = (v === null || v === '') ? '--' : v;
+            });
+            statusEl.textContent = 'Last updated: ' + new Date(data.time).toLocaleTimeString();
+        } catch (err) {
+            statusEl.textContent = 'Connection problem: ' + err.message;
+        }
+    }
+
+    refresh();
+    setInterval(refresh, 3000);
+</script>
+
+</body>
+</html>
